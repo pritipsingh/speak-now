@@ -84,3 +84,13 @@ package-lock.json
 
 # Optional: local PyPI creds (uncomment if you ever create it)
 # .pypirc
+
+# Speak — extra secret + build-artifact guards
+.env.*
+*.bak
+*.bak.*
+!example.env
+mac-app/.build/
+mac-app/*.app/
+mac-app/*.dmg
+compose.override.yaml

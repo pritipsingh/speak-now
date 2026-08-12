@@ -1,105 +1,56 @@
 """
-AgentOS Entrypoint
-==================
+Speak — AgentOS entrypoint
+==========================
+
+Backend for the Speak dictation app. It runs a single dictation cleanup agent and
+exposes the custom speech-to-text route (`/dictation/transcribe`), which chains
+OpenAI gpt-4o-transcribe into that agent.
 """
 
-from contextlib import asynccontextmanager
 from os import getenv
-from pathlib import Path
 
 from agno.os import AgentOS
-from agno.utils.log import log_info
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
-from agents.agent_builder import agent_builder
-from agents.platform_manager import platform_manager
-from agents.web_search import web_search
-from app.registry import registry
-from app.schedules import register_schedules
+from agents.dictation import dictation_agent
+from app.dictation_api import router as dictation_router
 from db import get_postgres_db
-from workflows.deployment_check import deployment_check
-from workflows.run_evals import run_evals
+from workflows.dictation import dictation_workflow
 
-# ---------------------------------------------------------------------------
-# Environment
-# ---------------------------------------------------------------------------
+# Local dev (RUNTIME_ENV=dev, set by compose.yaml) serves without JWT auth.
 runtime_env = getenv("RUNTIME_ENV", "prd")
-# Used by the scheduler and the OAuth server when MCP OAuth is enabled.
-agentos_url = getenv("AGENTOS_URL", "http://127.0.0.1:8000")
 
-# ---------------------------------------------------------------------------
-# Interfaces
-# - The Agent Builder agent becomes available on Slack when both env vars are set
-# ---------------------------------------------------------------------------
-SLACK_BOT_TOKEN = getenv("SLACK_BOT_TOKEN", "")
-SLACK_SIGNING_SECRET = getenv("SLACK_SIGNING_SECRET", "")
+# Shared-secret gate for small-team hosting. When SPEAK_ACCESS_TOKEN is set, every
+# request must carry `X-Speak-Token: <token>` except the open paths below. Unset
+# (local dev) → no gate. This lets us host on Railway with RUNTIME_ENV=dev (AgentOS
+# JWT off) while still keeping the endpoint private behind one secret.
+SPEAK_ACCESS_TOKEN = getenv("SPEAK_ACCESS_TOKEN", "")
+_OPEN_PATHS = ("/health", "/docs", "/redoc", "/openapi.json", "/dictation/health")
 
-interfaces: list = []
-if SLACK_BOT_TOKEN and SLACK_SIGNING_SECRET:
-    from agno.os.interfaces.slack import Slack
-
-    interfaces.append(
-        Slack(
-            agent=agent_builder,
-            streaming=True,
-            token=SLACK_BOT_TOKEN,
-            signing_secret=SLACK_SIGNING_SECRET,
-            resolve_user_identity=True,
-        )
-    )
+# Custom (non-agent) routes must be registered on a base_app so they land ahead of
+# the catch-all sub-app AgentOS mounts at "/" (otherwise they 404 on dispatch).
+base_app = FastAPI()
+base_app.include_router(dictation_router)
 
 
-# ---------------------------------------------------------------------------
-# MCP OAuth — enabled by setting the MCP_CONNECT_SECRET environment variable.
-# Connect your favorite AI apps and coding agents to a secure /mcp using OAuth.
-# ---------------------------------------------------------------------------
-MCP_CONNECT_SECRET = getenv("MCP_CONNECT_SECRET", "")
+@base_app.middleware("http")
+async def require_shared_secret(request: Request, call_next):
+    if SPEAK_ACCESS_TOKEN:
+        path = request.url.path
+        if not any(path.startswith(p) for p in _OPEN_PATHS):
+            if request.headers.get("X-Speak-Token") != SPEAK_ACCESS_TOKEN:
+                return JSONResponse({"detail": "Unauthorized"}, status_code=401)
+    return await call_next(request)
 
-mcp_auth = None
-if MCP_CONNECT_SECRET:
-    from agno.os import AgentOSBuiltinAuth
-
-    mcp_auth = AgentOSBuiltinAuth(
-        url=agentos_url,
-        secret=MCP_CONNECT_SECRET,
-        signing_key_material=getenv("AGENTOS_MCP_SIGNING_KEY"),
-    )
-
-
-# ---------------------------------------------------------------------------
-# Lifespan — app-level startup / teardown.
-#
-# AgentOS handles the MCP lifecycle (connect on startup, close on shutdown)
-# for agent-attached and registry tools. Keep this hook to plug in your own setup.
-# ---------------------------------------------------------------------------
-@asynccontextmanager
-async def lifespan(app):  # type: ignore[no-untyped-def]
-    log_info("AgentOS lifespan: startup")
-    # Register schedules on startup. Idempotent and fail-soft.
-    register_schedules()
-    try:
-        yield
-    finally:
-        log_info("AgentOS lifespan: shutdown")
-
-
-# ---------------------------------------------------------------------------
-# Create AgentOS
-# ---------------------------------------------------------------------------
 agent_os = AgentOS(
-    name="AgentOS",
-    tracing=True,
-    scheduler=True,
-    scheduler_base_url=agentos_url,
+    name="Speak",
     authorization=runtime_env != "dev",
-    mcp_server=True,
-    mcp_auth=mcp_auth,
-    lifespan=lifespan,
     db=get_postgres_db(),
-    agents=[agent_builder, platform_manager, web_search],
-    workflows=[deployment_check, run_evals],
-    interfaces=interfaces,
-    registry=registry,
-    config=str(Path(__file__).parent / "config.yaml"),
+    agents=[dictation_agent],
+    workflows=[dictation_workflow],
+    base_app=base_app,
+    telemetry=False,
 )
 app = agent_os.get_app()
 
