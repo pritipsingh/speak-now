@@ -43,6 +43,7 @@ async def require_shared_secret(request: Request, call_next):
                 return JSONResponse({"detail": "Unauthorized"}, status_code=401)
     return await call_next(request)
 
+
 agent_os = AgentOS(
     name="Speak",
     authorization=runtime_env != "dev",

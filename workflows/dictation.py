@@ -37,11 +37,13 @@ def _openai() -> AsyncOpenAI:
 
 async def transcribe_audio(filename: str, data: bytes, language: Optional[str]) -> str:
     """Speech-to-text. Reused by the /transcribe route for the clean=false path."""
-    kwargs = {"model": TRANSCRIBE_MODEL, "file": (filename or "audio.wav", data)}
+    client = _openai()
+    file_arg = (filename or "audio.wav", data)
     if language:
-        kwargs["language"] = language
-    result = await _openai().audio.transcriptions.create(**kwargs)
-    return (result.text or "").strip()
+        result = await client.audio.transcriptions.create(model=TRANSCRIBE_MODEL, file=file_arg, language=language)
+    else:
+        result = await client.audio.transcriptions.create(model=TRANSCRIBE_MODEL, file=file_arg)
+    return (getattr(result, "text", "") or "").strip()
 
 
 async def _transcribe_step(step_input: StepInput) -> StepOutput:

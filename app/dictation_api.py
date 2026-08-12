@@ -16,7 +16,6 @@ the recorded audio here. The cleaned text is returned and pasted at the cursor.
 
 from __future__ import annotations
 
-from os import getenv
 from typing import Optional
 
 from agno.utils.log import log_error, log_info
@@ -76,8 +75,8 @@ async def transcribe(
         log_error(f"Dictation workflow failed: {exc}")
         raise HTTPException(status_code=502, detail=f"Dictation failed: {exc}") from exc
 
-    text = (run.content or "").strip()
-    raw = (sink.get("raw") or text).strip()
+    text = str(run.content or "").strip()
+    raw = str(sink.get("raw") or text).strip()
     log_info(f"Dictation workflow: raw={raw[:80]!r} -> text={text[:80]!r}")
     return DictationResponse(raw=raw, text=text, cleaned=True)
 
