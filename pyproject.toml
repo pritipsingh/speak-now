@@ -15,7 +15,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["mypy", "ruff"]
+# ruff pinned so CI is deterministic (unpinned pulls the latest ruff, which changed
+# formatting/lint rules and started reformatting Markdown code blocks).
+dev = ["mypy", "ruff==0.12.2"]
 
 [build-system]
 requires = ["setuptools"]
