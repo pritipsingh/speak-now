@@ -9,10 +9,14 @@ the result at your cursor in **any app**. A native macOS menu-bar app on top of 
   turns spoken commands ("new line", "period") into real formatting
 - **Insertion:** finds the focused field (or the nearest one to your pointer) and pastes
 
-```
-Hold Right Option → record → POST audio → [ transcribe → cleanup ] → paste at cursor
-        (Swift app)                              (agno workflow)         (Swift app)
-```
+## How it works
+
+![How Speak works — hold Right Option, record, transcribe and clean, paste at cursor](docs/how-it-works.svg)
+
+A single floating **pill** is the whole UI — a small orb that expands on hover and
+morphs into the waveform while you dictate:
+
+![Speak pill states — idle orb, hover controls, recording waveform, transcribing](docs/pill-states.svg)
 
 ## Repo layout
 
@@ -75,6 +79,33 @@ Local dev needs neither.
   **Language** (Auto / English / Hindi / …), Server settings, permissions.
 - **Floating pill:** a small orb that expands on hover and morphs into the waveform
   while recording.
+
+## Swap the models — it's open source, experiment freely
+
+Both models are one env var each. Try cheaper/faster models and compare quality vs
+latency vs cost:
+
+| Env var | Default | What it does | Try |
+|---|---|---|---|
+| `DICTATION_TRANSCRIBE_MODEL` | `gpt-4o-transcribe` | Speech-to-text | `gpt-4o-mini-transcribe` (faster/cheaper) |
+| `DICTATION_CLEANUP_MODEL` | `gpt-4.1-mini` | Cleanup/formatting | `gpt-4.1-nano` (lowest latency) |
+
+Set them in `.env` (or your host's variables) and restart:
+
+```bash
+DICTATION_TRANSCRIBE_MODEL=gpt-4o-mini-transcribe
+DICTATION_CLEANUP_MODEL=gpt-4.1-nano
+```
+
+Want a **different provider** entirely? The cleanup step is a normal agno agent in
+`agents/dictation.py` — swap `OpenAIChat` for `Claude`, `Gemini`, `Ollama` (local),
+etc. (see [agno models](https://docs.agno.com/models)). The transcribe step is a plain
+function in `workflows/dictation.py` — point it at Deepgram, Groq Whisper, or a local
+`faster-whisper` instead. Because the pipeline is a two-step agno Workflow, adding steps
+(language-detect, per-app tone, custom vocabulary) is just appending a `Step`.
+
+Tip: the app can send `clean=false` to see the raw transcript, so you can measure STT
+quality separately from the cleanup model.
 
 ## Download (no build)
 

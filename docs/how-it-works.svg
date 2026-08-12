@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 200" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+  <rect width="900" height="200" rx="16" fill="#16181d"/>
+
+  <!-- step 1: hotkey -->
+  <circle cx="120" cy="36" r="13" fill="#6257e6"/>
+  <text x="120" y="41" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">1</text>
+  <rect x="72" y="62" width="96" height="52" rx="12" fill="#23252c" stroke="#ffffff" stroke-opacity="0.12"/>
+  <text x="120" y="96" text-anchor="middle" font-size="24" fill="#fff">&#8997;</text>
+  <text x="120" y="136" text-anchor="middle" font-size="12" fill="#8b8f98">Right Option</text>
+  <text x="120" y="168" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">Hold to talk</text>
+
+  <!-- step 2: record (the pill) -->
+  <circle cx="350" cy="36" r="13" fill="#6257e6"/>
+  <text x="350" y="41" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">2</text>
+  <rect x="272" y="64" width="156" height="48" rx="24" fill="#191920" stroke="#ffffff" stroke-opacity="0.10"/>
+  <circle cx="298" cy="88" r="17" fill="#e2483d"/>
+  <rect x="292" y="82" width="12" height="12" rx="3" fill="#fff"/>
+  <g fill="#ffffff">
+    <rect x="324" y="83" width="3" height="10" rx="1.5" opacity="0.5"/>
+    <rect x="331" y="79" width="3" height="18" rx="1.5" opacity="0.6"/>
+    <rect x="338" y="85" width="3" height="6" rx="1.5" opacity="0.55"/>
+    <rect x="345" y="76" width="3" height="24" rx="1.5" opacity="0.7"/>
+    <rect x="352" y="82" width="3" height="12" rx="1.5" opacity="0.65"/>
+    <rect x="359" y="78" width="3" height="20" rx="1.5" opacity="0.75"/>
+    <rect x="366" y="84" width="3" height="8" rx="1.5" opacity="0.7"/>
+    <rect x="373" y="80" width="3" height="16" rx="1.5" opacity="0.8"/>
+    <rect x="380" y="83" width="3" height="10" rx="1.5" opacity="0.75"/>
+    <rect x="387" y="78" width="3" height="20" rx="1.5" opacity="0.85"/>
+    <rect x="394" y="85" width="3" height="6" rx="1.5" opacity="0.8"/>
+    <rect x="401" y="81" width="3" height="14" rx="1.5" opacity="0.9"/>
+  </g>
+  <text x="350" y="168" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">Record</text>
+
+  <!-- step 3: transcribe + clean -->
+  <circle cx="590" cy="36" r="13" fill="#6257e6"/>
+  <text x="590" y="41" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">3</text>
+  <rect x="493" y="58" width="194" height="60" rx="12" fill="#23252c" stroke="#ffffff" stroke-opacity="0.12"/>
+  <text x="590" y="84" text-anchor="middle" font-size="13" fill="#fff">gpt-4o-transcribe</text>
+  <text x="590" y="104" text-anchor="middle" font-size="12" fill="#8b8f98">&#8595;  cleanup agent</text>
+  <text x="590" y="168" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">Transcribe + clean</text>
+
+  <!-- step 4: paste -->
+  <circle cx="810" cy="36" r="13" fill="#6257e6"/>
+  <text x="810" y="41" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">4</text>
+  <rect x="713" y="62" width="176" height="52" rx="8" fill="#23252c" stroke="#ffffff" stroke-opacity="0.12"/>
+  <text x="729" y="93" font-size="13" fill="#fff">Let&#8217;s ship it.</text>
+  <rect x="815" y="80" width="2" height="18" fill="#6257e6"/>
+  <text x="810" y="168" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">Paste at cursor</text>
+
+  <!-- arrows -->
+  <g stroke="#5b6270" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M198,88 L250,88 M242,82 L250,88 L242,94"/>
+    <path d="M440,88 L481,88 M473,82 L481,88 L473,94"/>
+    <path d="M699,88 L703,88 M701,88 L703,88"/>
+    <path d="M689,88 L707,88 M699,82 L707,88 L699,94"/>
+  </g>
+</svg>

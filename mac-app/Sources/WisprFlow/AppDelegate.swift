@@ -58,6 +58,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSPopo
         NSLog(
             "Speak: launched (build v3). accessibility=\(Permissions.hasAccessibility(prompt: false)) "
                 + "mic=\(AVCaptureDevice.authorizationStatus(for: .audio).rawValue)")
+        // Floating pill visible by default; an explicit toggle-off overrides this.
+        UserDefaults.standard.register(defaults: ["speak.pill.idleVisible": true])
         setupStatusItem()
         setupPill()
         refreshStatusIcon()
